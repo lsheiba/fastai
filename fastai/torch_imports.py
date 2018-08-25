@@ -1,4 +1,5 @@
 import os
+from distutils.version import LooseVersion
 import torch, torchvision, torchtext
 from torch import nn, cuda, backends, FloatTensor, LongTensor, optim
 import torch.nn.functional as F
@@ -22,9 +23,21 @@ from .models.fa_resnet import *
 import warnings
 warnings.filterwarnings('ignore', message='Implicit dimension choice', category=UserWarning)
 
+IS_TORCH_04 = LooseVersion(torch.__version__) >= LooseVersion('0.4')
+if IS_TORCH_04:
+    from torch.nn.init import kaiming_uniform_ as kaiming_uniform
+    from torch.nn.init import kaiming_normal_ as kaiming_normal
+
 def children(m): return m if isinstance(m, (list, tuple)) else list(m.children())
 def save_model(m, p): torch.save(m.state_dict(), p)
-def load_model(m, p): m.load_state_dict(torch.load(p, map_location=lambda storage, loc: storage))
+def load_model(m, p):
+    sd = torch.load(p, map_location=lambda storage, loc: storage)
+    names = set(m.state_dict().keys())
+    for n in list(sd.keys()): # list "detatches" the iterator
+        if n not in names and n+'_raw' in names:
+            if n+'_raw' not in sd: sd[n+'_raw'] = sd[n]
+            del sd[n]
+    m.load_state_dict(sd)
 
 def load_pre(pre, f, fn):
     m = f()
@@ -49,7 +62,7 @@ def inception_4(pre): return children(inceptionv4(pretrained=pre))[0]
 
 @_fastai_model('Inception 4', 'Inception-v4, Inception-ResNet and the Impact of Residual Connections on Learning',
                'https://arxiv.org/pdf/1602.07261.pdf')
-def inceptionresnet_2(pre): return load_pre(pre, InceptionResnetV2, 'inceptionresnetv2-d579a627')
+def inceptionresnet_2(pre): return load_pre(pre, InceptionResnetV2, 'inceptionresnetv2-520b38e4')
 
 @_fastai_model('ResNeXt 50', 'Aggregated Residual Transformations for Deep Neural Networks',
                'https://arxiv.org/abs/1611.05431')

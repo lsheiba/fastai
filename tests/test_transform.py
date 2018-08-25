@@ -180,20 +180,18 @@ def test_lighting():
                 [0.5 , 0.8 , 0.5 ]], dtype=np.float32)
     a = lighting(im, 0.5, 1)
     np.testing.assert_array_equal(a, e)
-@pytest.mark.skip(reason="It does not work for some reason see #431")
+
 def test_rotate_cv():
     im = np.array([
         [0.,   0.1,  0., ],
         [0.,   0.2,  0., ],
         [0.,   0.3,  0., ],])
     a = rotate_cv(im, 90)
-    # TODO: find out why this test breaks
     e = np.array([[0. , 0. , 0. ],
                   [0.1, 0.2, 0.3],
                   [0. , 0. , 0. ],])
     np.testing.assert_array_equal(a, e)
 
-@pytest.mark.skip(reason="It does not work for some reason see #431")
 def test_rotate_cv_vs_dihedral():
     im = np.array([
         [0.,   0.1,  0., ],
@@ -202,7 +200,7 @@ def test_rotate_cv_vs_dihedral():
     a = rotate_cv(im, 180)
     e = dihedral(im, 6)
     np.testing.assert_array_equal(a, e)
-    
+
 def test_no_crop():
     im = np.array([
         [0.,   0.1,  0., ],
@@ -234,10 +232,12 @@ def test_googlenet_resize():
     # TODO: figure out how to test this in a way it make sense
     pass
 
-def test_cutout():
-    im = np.ones([128,128,3], np.float32)
-    with_holes = cutout(im, 1, 10)
-    assert (with_holes == 0).sum() == 300, "There is one cut out hole 10px x 10px in size (over 3 channels)"
+#This test will fail because the hole cut out can be near the edage of the picture.
+#TODO: figure out how to test this better.
+#def test_cutout():
+#    im = np.ones([128,128,3], np.float32)
+#    with_holes = cutout(im, 1, 10)
+#    assert (with_holes == 0).sum() == 300, "There is one cut out hole 10px x 10px in size (over 3 channels)"
 
 def test_scale_to():
     h=10
