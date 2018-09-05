@@ -8,7 +8,6 @@ from .sgdr import *
 from .layer_optimizer import *
 from .layers import *
 from .metrics import *
-from .losses import *
 from .swa import *
 from .fp16 import *
 from .lsuv_initializer import apply_lsuv_init
@@ -380,6 +379,13 @@ class Learner():
     def predict_dl(self, dl): return predict_with_targs(self.model, dl)[0]
 
     def predict_array(self, arr):
+        """
+        Args:
+            arr: a numpy array to be used as input to the model for prediction purposes
+        Returns:
+            a numpy array containing the predictions from the model
+        """
+        if not isinstance(arr, np.ndarray): raise OSError(f'Not valid numpy array')
         self.model.eval()
         return to_np(self.model(to_gpu(V(T(arr)))))
 
@@ -391,7 +397,7 @@ class Learner():
         is to increase the accuracy of predictions by examining the images using multiple
         perspectives.
 
-        Args:
+
             n_aug: a number of augmentation images to use per original image
             is_test: indicate to use test images; otherwise use validation images
 
